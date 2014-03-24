@@ -3,13 +3,14 @@ import json
 import os
 
 class User:
-	def __init__(self, access_token):
+	def __init__(self, access_token, path):
 		client = dropbox.client.DropboxClient(access_token)
 		self.client = client
 		self.fileList = []
 		self.deletedFileList = []
 		self.folderList = []
 		self.deletedFolderList = []
+		self.explore('/')
 
 	def getClient(self):
 		return self.client
@@ -57,7 +58,6 @@ class User:
 				self.folderList.append(contentObj)
 				self.explore(contentObj.getPath())
 			elif self.contentType(content) == "File":
-				print "appending file!"
 				contentObj = File(content)
 				self.fileList.append(contentObj)
 			elif self.contentType(content) == "Deleted File":
@@ -65,6 +65,69 @@ class User:
 				self.deletedFileList.append(contentObj)
 			else:
 				print "Error"
+
+
+	def sortFileListBySize(self):
+		sizeList = []
+		for f in self.fileList:
+			sizeList.append((f.getSize(), f))
+			sizeList.sort()
+		return sizeList
+
+	def getLargestFile(self):
+		return self.sortFileListBySize()[-1][1]
+
+	def getSmallestFile(self):
+		return self.sortFileListBySize()[0][1]
+
+	def findExt(self, ext, deleted = True):
+		extList = []
+		if deleted == True:
+			for f in self.deletedFileList:
+				if f.getExt() == ext:
+					extList.append(f)
+		else:
+			for f in self.fileList:
+				if f.getExt() == ext:
+					extList.append(f)
+		return extList
+
+	def extCount(self, ext, deleted = True):
+		return len(self.findExt(ext, deleted))
+
+	def fileCount(self):
+		return len(self.fileList)
+
+	def deletedFileCount(self):
+		return len(self.deletedFileList)
+
+	def folderCount(self):
+		return len(self.folderList)
+
+	def deletedFolderCount(self):
+		return len(self.deletedFolderList)
+
+	def simpleAnalytics(self):
+		print "Total number of files(deleted and non-deleted) is:\t\t " , self.fileCount() + self.deletedFileCount()
+		print "Total number of non-deleted files is:\t\t\t\t ", self.fileCount()
+		print "Total number of deleted files is:\t\t\t\t ", self.deletedFileCount()
+
+		print "Total number of folders(deleted and non-deleted) is:\t\t " , self.folderCount() + self.deletedFolderCount()
+		print "Total number of non-deleted folders is:\t\t\t\t ", self.folderCount()
+		print "Total number of deleted folders is:\t\t\t\t ", self.deletedFolderCount()
+
+		print "Total number of files with extention .pdf is:\t\t\t ", self.extCount('.pdf', True) +  self.extCount('.pdf', False)
+		print "Total number of files with extention .txt is:\t\t\t ", self.extCount('.txt', True) +  self.extCount('.txt', False)
+		print "Total number of files(deleted) with extention .txt is:\t\t ", self.extCount('.txt', True)
+		print "Total number of files(non-deleted) with extention .txt is:\t ", self.extCount('.txt', False)
+		
+		smallestFile = self.getSmallestFile()
+		largestFile = self.getLargestFile()
+		print "Smallest File is:\t ", smallestFile.getPath(), " at size ", smallestFile.getSize(), " Bytes"
+		print "Largest File is:\t ", largestFile.getPath(), " at size ", largestFile.getSize(), " Bytes"
+
+
+
 
 class Content:
 	def __init__(self, content):
@@ -87,7 +150,7 @@ class Content:
 		
 class File(Content):
 	def getExt(self):
-		name,ext = os.path.splitext(self.getContent["path"])
+		name,ext = os.path.splitext(self.getContent()["path"])
 		return ext
 	def isDeleted(self):
 		return False
