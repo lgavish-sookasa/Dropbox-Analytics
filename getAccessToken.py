@@ -3,7 +3,9 @@ import dropbox
 APP_KEY = 'o3n6u096tbfspas'
 APP_SECRET = '9um8m6mlzfiyx6o'
 
-
+"""
+	Guides user to setting up app permission
+"""
 def getAccess_token():
 	app_key = APP_KEY
 	app_secret = APP_SECRET

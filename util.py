@@ -26,7 +26,9 @@ class User:
 
 	def deletedFolderList(self):
 		return self.deletedFolderList
-
+	'''
+		Returns a dictionary or JSon of the metadata of a file or folder at path
+	'''
 	def getMetaData(self, path, type = 'dictionary'):
 		folder_metadata = self.getClient().metadata(path, list=True, file_limit=25000, hash=None, rev=None, include_deleted=True)
 		if type == 'dictionary':
@@ -34,6 +36,9 @@ class User:
 		else:
 			return json.dumps(folder_metadata)
 	
+	'''
+		Returns a string indicating type of content
+	'''
 	def contentType(self, content):
 		if content["is_dir"] == True:
 			if "is_deleted" in content.keys():
@@ -46,6 +51,9 @@ class User:
 			else:
 				return "File"
 
+	'''
+		Populates four lists(deletedFileList, deletedFolderList, fileList, folderList) with respective objects using naive Depth-first search
+	'''			
 	def explore(self, path):
 		metaData = self.getMetaData(path)
 		for content in metaData["contents"]:
@@ -66,7 +74,9 @@ class User:
 			else:
 				print "Error"
 
-
+	'''
+		Returns a sorted list of tuples(size, File object)
+	'''
 	def sortFileListBySize(self):
 		sizeList = []
 		for f in self.fileList:
@@ -80,6 +90,9 @@ class User:
 	def getSmallestFile(self):
 		return self.sortFileListBySize()[0][1]
 
+	'''
+		Returns a list of File or deletedFile objects with extention ext
+	'''
 	def findExt(self, ext, deleted = True):
 		extList = []
 		if deleted == True:
